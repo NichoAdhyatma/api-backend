@@ -2,32 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Comment;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function postComment(Request $request, String $id)
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request, $id)
-    {
-
         $post = Post::find($id);
 
         $post = Post::find($id);
+
+
 
         if (!$post) {
             return response([
@@ -35,8 +24,21 @@ class CommentController extends Controller
             ], 403);
         }
 
+
+
+        $attr = $request->validate([
+            'body' => 'required|string'
+        ]);
+
+
+        Comment::create([
+            'user_id' => Auth::user()->id,
+            'body' => $attr['body'],
+            'post_id' => $post->id
+        ]);
+
         return response([
-            'comments' => $post->comments(),
+            'message' => 'comments posted',
         ], 200);
     }
 
@@ -61,19 +63,36 @@ class CommentController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
     {
-        //
+        $comment = Comment::find($id);
+
+        if (!$comment) {
+            return response([
+                'message' => 'comment not found'
+            ], 403);
+        }
+
+        if ($comment->user_id != Auth::user()->id) {
+            return response([
+                'message' => 'action not allowed',
+            ], 403);
+        }
+
+        $attr = $request->validate([
+            'body' => 'required|string'
+        ]);
+
+        $comment->update([
+            'body' => $attr['body'],
+        ]);
+
+
+        return response([
+            'message' => 'comments updated',
+        ], 200);
     }
 
     /**
@@ -81,6 +100,24 @@ class CommentController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $comment = Comment::find($id);
+
+        if (!$comment) {
+            return response([
+                'message' => 'comment not found'
+            ], 403);
+        }
+
+        if ($comment->user_id != Auth::user()->id) {
+            return response([
+                'message' => 'action not allowed',
+            ], 403);
+        }
+
+        $comment->delete();
+
+        return response([
+            'message' => 'comments deleted',
+        ], 200);
     }
 }

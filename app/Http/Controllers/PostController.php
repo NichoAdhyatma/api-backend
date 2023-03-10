@@ -14,15 +14,10 @@ class PostController extends Controller
     public function index()
     {
         return response([
-            'posts' => Post::orderBy('created_at')->get(),
+            'posts' => Post::orderBy('created_at')->withCount('comments', 'likes')->with('likes', function($like) {
+                return $like->where('user_id', Auth::user()->id)->select('id', 'user_id', 'post_id')->get();
+            })->get(),
         ], 200);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
     }
 
     /**
@@ -32,11 +27,14 @@ class PostController extends Controller
     {
         $attr = $request->validate([
             'body' => 'required|string'
-        ]);;
+        ]);
+
+        $image = $this->saveImage($request->image, 'posts');
 
         Post::create([
             'user_id' =>  Auth::user()->id,
-            'body' => $attr['body']
+            'body' => $attr['body'],
+            'image' => $image
         ]);
 
         return response([
@@ -50,14 +48,6 @@ class PostController extends Controller
     public function show(string $id)
     {
         return response(['post' => Post::find($id)], 200);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**

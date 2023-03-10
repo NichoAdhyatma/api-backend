@@ -23,6 +23,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/user', [AuthController::class, 'user']);
+    Route::patch('/user', [AuthController::class, 'update']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     //Post
@@ -30,6 +31,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     //Comment
     Route::resource('/comment', CommentController::class);
+    Route::post('/post-comments/{id}', [CommentController:: class, 'postComment']);
 
     //Like
     Route::post('/likes/{id}', [LikeController::class, 'likeOrUnlike']);

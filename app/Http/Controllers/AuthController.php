@@ -69,4 +69,22 @@ class AuthController extends Controller
             'user' => Auth::user(),
         ], 200);
     }
+
+    public function update(Request $request) {
+        $attr = $request->validate([
+            'name' => 'required|string'
+        ]);
+
+        $image = $this->saveImage($request->image, 'profiles');
+
+        Auth::user()->update([
+            'name' => $attr['name'],
+            'image' => $image,
+        ]);
+
+        return response([
+            'message' => 'update profile success',
+            'user' => Auth::user(),
+        ], 200);
+    }
 }
